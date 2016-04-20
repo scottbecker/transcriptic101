@@ -4,7 +4,7 @@ from utils import ul
 
 inv = {
     'gblock_dna':'ct18vs7cmjat2c',     # my inventory
-     'te': 'rs17pwyc754v9t',           # catalog; TE
+    'te': 'rs17pwyc754v9t',           # catalog; TE
 }
 
 p = Protocol()
