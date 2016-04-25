@@ -14,8 +14,7 @@ p = Protocol()
 experiment_name = "sfgfp_pcroe_v8"
 template_length = 740
 
-_options = {'dilute_primers' : False, # if working stock has not been made
-            'dilute_template': False, # if working stock has not been made
+_options = {'dilute_template': False, # if working stock has not been made
             'dilute_dNTP'    : False, # if working stock has not been made
             'run_gel'        : True,  # run a gel to see the plasmid size
             'run_absorbance' : False, # check absorbance at 260/280/320
@@ -31,21 +30,37 @@ options = {k for k,v in _options.items() if v is True}
 # 'sfgfp_puc19_primer2': 'ct17z9542m5ntb', # inventory; micro-2.0, cold_4
 # 'sfgfp_idt_1ngul':     'ct184nnd3rbxfr', # inventory; micro-1.5, cold_4, (ERROR: no template)
 #
+
+
+#@ToDo: convert sfgfp from 10uM to 100uM
+#@ToDo: confirm my 1ng/uL is correct
+
 inv = {
     'Q5 Polymerase':                     'rs16pcce8rdytv', # catalog; Q5 High-Fidelity DNA Polymerase
     'Q5 Buffer':                         'rs16pcce8rmke3', # catalog; Q5 Reaction Buffer
     'dNTP Mixture':                      'rs16pcb542c5rd', # catalog; dNTP Mixture (25mM?)
     'water':                             'rs17gmh5wafm5p', # catalog; Autoclaved MilliQ H2O
-    'sfgfp_pcroe_v5_puc19_primer1_10uM': 'ct186cj5cqzjmr', # inventory; micro-1.5, cold_4
-    'sfgfp_pcroe_v5_puc19_primer2_10uM': 'ct186cj5cq536x', # inventory; micro-1.5, cold_4
-    'sfgfp1':                            'ct17yx8h759dk4', # inventory; sfGFP tube #1, micro-1.5, cold_20
+    'sfgfp_puc19_primer_forward_10uM':  'ct18wxfe2dxmmd', # inventory; micro-1.5, cold_4, 10uM
+    'sfgfp_puc19_primer_reverse_10uM':  'ct18wxfdgqfyjp', # inventory; micro-1.5, cold_4, 10uM
+    'sfgfp_2nM':                       'ct18vs7cmjat2c', # inventory; sfGFP tube #1, micro-1.5, cold_20, 2.12nM, 1ng/uL
 }
+
+if "--test" in sys.argv:
+    test_inv = {
+        'sfgfp_puc19_primer_forward_10uM':  'ct18x626u9nvne', # inventory; micro-1.5, cold_4, 10uM
+        'sfgfp_puc19_primer_reverse_10uM':  'ct18x626u9yshq', # inventory; micro-1.5, cold_4, 10uM
+        'sfgfp_2nM':                        'ct18x62qg8km37', # inventory
+    }
+    inv.update(test_inv)
 
 
 # Existing inventory
-template_tube = p.ref("sfgfp1", id=inv['sfgfp1'], cont_type="micro-1.5", storage="cold_4").well(0)
-dilute_primer_tubes = [p.ref('sfgfp_pcroe_v5_puc19_primer1_10uM', id=inv['sfgfp_pcroe_v5_puc19_primer1_10uM'], cont_type="micro-1.5", storage="cold_4").well(0),
-                       p.ref('sfgfp_pcroe_v5_puc19_primer2_10uM', id=inv['sfgfp_pcroe_v5_puc19_primer2_10uM'], cont_type="micro-1.5", storage="cold_4").well(0)]
+template_tube = p.ref("sfgfp_2nM", id=inv['sfgfp_2nM'], cont_type="micro-1.5", storage="cold_20").well(0)
+primer_wells = [p.ref('sfgfp_puc19_primer_forward_10uM', id=inv['sfgfp_puc19_primer_forward_10uM'], 
+                      cont_type="micro-1.5", storage="cold_20").well(0),
+                p.ref('sfgfp_puc19_primer_reverse_10uM', id=inv['sfgfp_puc19_primer_reverse_10uM'], 
+                      cont_type="micro-1.5", storage="cold_20").well(0)]
+
 
 # New inventory resulting from this experiment
 dilute_template_tube = p.ref("sfgfp1_0.25ngul",  cont_type="micro-1.5", storage="cold_4").well(0)
@@ -60,7 +75,7 @@ if 'run_absorbance' in options:
     abs_plate = p.ref("abs_plate", cont_type="96-flat", storage="cold_4", discard=True)
 
 # Initialize all existing inventory
-all_inventory_wells = [template_tube] + dilute_primer_tubes
+all_inventory_wells = [template_tube] + primer_wells
 for well in all_inventory_wells:
     init_inventory_well(well)
     print(well.name, well.volume, well.properties)
@@ -70,15 +85,6 @@ for well in all_inventory_wells:
 # Provision water once, for general use
 #
 p.provision(inv["water"], water_tube, ul(500))
-
-# -----------------------------------------------------
-# Dilute primers 1/10 (100uM->10uM) and keep at 4C
-#
-if 'dilute_primers' in options:
-    for primer_num in (0,1):
-        p.transfer(water_tube, dilute_primer_tubes[primer_num], ul(90))
-        p.transfer(primer_tubes[primer_num], dilute_primer_tubes[primer_num], ul(10), mix_before=True, mix_vol=ul(50))
-        p.mix(dilute_primer_tubes[primer_num], volume=ul(50), repetitions=10)
 
 
 # -----------------------------------------------------
@@ -107,7 +113,7 @@ if 'dilute_DNTP' in options:
 # 10mM dNTP               0.5  ul -- 1ul = 4x12.5mM
 # 10uM primer 1           1.25 ul
 # 10uM primer 2           1.25 ul
-# 1pg-1ng Template        1    ul -- 0.5 or 1ng/ul concentration
+# 1pg-1ng Template        1    ul -- 1ng/ul concentration
 # -------------------------------
 # Sum                     9.25 ul
 #
@@ -118,8 +124,8 @@ p.transfer(water_tube,             mastermix_tube, ul(64))
 p.provision(inv["Q5 Buffer"],      mastermix_tube, ul(20))
 p.provision(inv['Q5 Polymerase'],  mastermix_tube, ul(1))
 p.transfer(dNTP_10uM_tube,         mastermix_tube, ul(1), mix_before=True, mix_vol=ul(2))
-p.transfer(dilute_primer_tubes[0], mastermix_tube, ul(5), mix_before=True, mix_vol=ul(10))
-p.transfer(dilute_primer_tubes[1], mastermix_tube, ul(5), mix_before=True, mix_vol=ul(10))
+p.transfer(primer_wells[0], mastermix_tube, ul(5), mix_before=True, mix_vol=ul(10))
+p.transfer(primer_wells[1], mastermix_tube, ul(5), mix_before=True, mix_vol=ul(10))
 p.mix(mastermix_tube, volume="48:microliter", repetitions=10)
 
 # Transfer mastermix to pcr_plate without template
