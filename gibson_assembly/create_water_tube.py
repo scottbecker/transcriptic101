@@ -17,7 +17,7 @@ p = Protocol()
 
 #create a container 
 
-water_tube = p.ref("water_tube", cont_type="micro-1.5", storage="cold_4", discard=False).well(0)
+water_tube = p.ref("sfGFP gblock test", cont_type="micro-1.5", storage="cold_20", discard=False).well(0)
 
 p.provision(inv["water"], water_tube, ul(500))
 
