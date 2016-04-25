@@ -6,10 +6,18 @@ from autoprotocol.protocol import Ref # "Link a ref name (string) to a Container
 import requests
 import logging
 import json
+import sys
 
 # Transcriptic authorization
-org_name = 'hgbrian'
-tsc_headers = {k:v for k,v in json.load(open("../auth.json")).items() if k in ["X_User_Email","X_User_Token"]}
+
+if "--test" in sys.argv:
+    auth_file = '../test_mode_auth.json'
+else:
+    auth_file = '../auth.json'
+
+auth_config = json.load(open(auth_file))
+TSC_HEADERS = {k:v for k,v in auth_config.items() if k in ["X_User_Email","X_User_Token"]}
+ORG_NAME = auth_config['org_name']
 
 # Transcriptic-specific dead volumes
 _dead_volume = [("96-pcr",3), ("96-flat",25), ("96-flat-uv",25), ("96-deep",15),
@@ -18,7 +26,7 @@ _dead_volume = [("96-pcr",3), ("96-flat",25), ("96-flat-uv",25), ("96-deep",15),
 dead_volume = {k:Unit(v,"microliter") for k,v in _dead_volume}
 
 
-def init_inventory_well(well, headers=tsc_headers, org_name=org_name):
+def init_inventory_well(well, headers=TSC_HEADERS, org_name=ORG_NAME):
     """Initialize well (set volume etc) for Transcriptic"""
     def _container_url(container_id):
         return 'https://secure.transcriptic.com/{}/samples/{}.json'.format(org_name, container_id)
