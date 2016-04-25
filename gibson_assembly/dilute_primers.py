@@ -2,7 +2,7 @@ from autoprotocol.protocol import Protocol
 import json
 import sys
 
-from utils import ul
+from utils import ul, init_inventory_well, dead_volume
 
 inv = {
     'water':                             'rs17gmh5wafm5p', # catalog: autoclave milliq h2o
@@ -20,16 +20,16 @@ if "--test" in sys.argv:
 
 
 
-def dilute_primer(source_tube, destination_well, destination_volume_uL,
+def dilute_primer(source_well, destination_well, destination_volume_uL,
                   ratio, diluent):
     """
-    Dilutes source_tube into destination tube using diluent
+    Dilutes source_well into destination tube using diluent
     
     Args:
-        source_tube: the tube at a higher concentration
+        source_well: the tube at a higher concentration
         destination_well: the tube that will have the dilution product
         destination_volume_uL: the volume of destination_well
-        ratio:  destination_well concentration / source_tube concentration
+        ratio:  destination_well concentration / source_well concentration
         diluent_well: a tube with enough d to be used for the diluation
     
     Returns:
@@ -46,9 +46,12 @@ def dilute_primer(source_tube, destination_well, destination_volume_uL,
     diluent_volume_uL = destination_volume_uL - source_volume_uL
 
     p.provision(inv[diluent], destination_well, ul(diluent_volume_uL))
-    
-    p.transfer(source_tube, destination_well, ul(source_volume_uL), 
-               mix_before=True, mix_vol=ul(diluent_volume_uL/2.0))
+
+    p.transfer(source_well, destination_well, ul(source_volume_uL), 
+               mix_before=True, 
+               mix_vol=min(ul(source_volume_uL*5),
+                           #prevent drawing more from the source well than is retrievable
+                           source_well.volume-source_well.container.container_type.safe_min_volume_ul))
     p.mix(destination_well, volume=ul(destination_volume_uL/2.0), repetitions=10)
     
 
@@ -63,13 +66,16 @@ dilute_primer_wells = [p.ref('sfgfp_puc19_primer_forward_10uM', cont_type="micro
 for well in dilute_primer_wells:
     well.properties = {'Molar Concentration':'10uM'}    
 
-primer_tubes = [p.ref('sfgfp_puc19_primer_forward_100uM', id=inv['sfgfp_puc19_primer_forward_100uM'], 
+primer_wells = [p.ref('sfgfp_puc19_primer_forward_100uM', id=inv['sfgfp_puc19_primer_forward_100uM'], 
                       cont_type="micro-1.5", storage="cold_20").well(0),
                        p.ref('sfgfp_puc19_primer_reverse_100uM', id=inv['sfgfp_puc19_primer_reverse_100uM'], 
                              cont_type="micro-1.5", storage="cold_20").well(0)]
 
+for well in primer_wells:
+    init_inventory_well(well)
+
 for x in range(0,2):
-    dilute_primer(primer_tubes[x], dilute_primer_wells[x], 
+    dilute_primer(primer_wells[x], dilute_primer_wells[x], 
                   100, 0.1, 'te')
 
 
