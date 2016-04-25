@@ -1,3 +1,9 @@
+""" 
+
+Derived from Brian Naughton @ http://blog.booleanbiotech.com/genetic_engineering_pipeline_python.html
+
+"""
+
 import autoprotocol
 from autoprotocol import Unit
 from autoprotocol.container import Container
@@ -8,7 +14,18 @@ import logging
 import json
 import sys
 
+#http debugging
+try:
+    import http.client as http_client
+except ImportError:
+    # Python 2
+    import httplib as http_client
+    
+#change this to 2 to show raw http request/responses
+http_client.HTTPConnection.debuglevel = 0
+
 # Transcriptic authorization
+
 
 if "--test" in sys.argv:
     auth_file = '../test_mode_auth.json'
@@ -17,6 +34,7 @@ else:
 
 auth_config = json.load(open(auth_file))
 TSC_HEADERS = {k:v for k,v in auth_config.items() if k in ["X_User_Email","X_User_Token"]}
+
 ORG_NAME = auth_config['org_name']
 
 # Transcriptic-specific dead volumes
@@ -30,6 +48,11 @@ def init_inventory_well(well, headers=TSC_HEADERS, org_name=ORG_NAME):
     """Initialize well (set volume etc) for Transcriptic"""
     def _container_url(container_id):
         return 'https://secure.transcriptic.com/{}/samples/{}.json'.format(org_name, container_id)
+
+
+    #only initialize containers that have already been made
+    if not well.container.id:
+        return
 
     response = requests.get(_container_url(well.container.id), headers=headers)
     response.raise_for_status()
