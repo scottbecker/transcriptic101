@@ -10,16 +10,17 @@ from utils import (ul, expid, init_inventory_well, touchdown,
                    dead_volume)
 import numpy
 
+
 p = Protocol()
 
 # ---------------------------------------------------
 # Set up experiment
 #
-experiment_name = "sfgfp_pcroe_v9"
+experiment_name = "sfgfp_pcr_v1"
 template_length = 726
 
 _options = {'run_gel'        : True,  # run a gel to see the plasmid size
-            'run_absorbance' : False, # check absorbance at 260/280/320
+            'run_absorbance' : True, # check absorbance at 260/280/320
             'run_sanger'     : False} # sanger sequence the new sequence
 options = {k for k,v in _options.items() if v is True}
 
@@ -41,8 +42,8 @@ inv = {
     'pcr_reagent_plate':                 'ct18x95j499zx4', # inventory: A1: Q5 polymerase,
                                                            # A2: Buffer, A3: Enhancer, B1: dNTP 10mM
     'water':                             'rs17gmh5wafm5p', # catalog; Autoclaved MilliQ H2O
-    'sfgfp_puc19_primer_forward_10uM':   'ct18wxfe2dxmmd', # inventory; micro-1.5, cold_4, 10uM
-    'sfgfp_puc19_primer_reverse_10uM':   'ct18wxfdgqfyjp', # inventory; micro-1.5, cold_4, 10uM
+    'sfgfp_puc19_primer_forward_10uM':   'ct18wxfe2dxmmd', # inventory; micro-1.5, cold_20, 10uM
+    'sfgfp_puc19_primer_reverse_10uM':   'ct18wxfdgqfyjp', # inventory; micro-1.5, cold_20, 10uM
     'sfgfp_2nM':                         'ct18vs7cmjat2c', # inventory; sfGFP tube #1, micro-1.5, cold_20, 2.12nM, 1ng/uL
 }
 
@@ -50,8 +51,8 @@ if "--test" in sys.argv:
     test_inv = {
         'pcr_reagent_plate':                'ct18x92yfcbhhz', # inventory: A1: Q5 polymerase,
                                                               # A2: Buffer, A3: Enhancer, B1: dNTP 10mM
-        'sfgfp_puc19_primer_forward_10uM':  'ct18x626u9nvne', # inventory; micro-1.5, cold_4, 10uM
-        'sfgfp_puc19_primer_reverse_10uM':  'ct18x626u9yshq', # inventory; micro-1.5, cold_4, 10uM
+        'sfgfp_puc19_primer_forward_10uM':  'ct18x626u9nvne', # inventory; micro-1.5, cold_20, 10uM
+        'sfgfp_puc19_primer_reverse_10uM':  'ct18x626u9yshq', # inventory; micro-1.5, cold_20, 10uM
         'sfgfp_2nM':                        'ct18x62qg8km37', # inventory
     }
     inv.update(test_inv)
@@ -65,7 +66,7 @@ primer_wells = [p.ref('sfgfp_puc19_primer_forward_10uM', id=inv['sfgfp_puc19_pri
                       cont_type="micro-1.5", storage="cold_20").well(0)]
 
 pcr_reagent_plate = p.ref("pcr_reagent_plate", id=inv['pcr_reagent_plate'], 
-                          cont_type="micro-1.5", storage="cold_20")
+                          cont_type="96-pcr", storage="cold_20")
 
 q5_poly_well = pcr_reagent_plate.wells(["A1"])[0]
 q5_buffer_well = pcr_reagent_plate.wells(["A2"])[0]
@@ -73,14 +74,14 @@ dNTP_well = pcr_reagent_plate.wells(["B1"])[0]
 
 
 # New inventory resulting from this experiment
-sfgfp_pcroe_out_tube = p.ref(expid("amplified",experiment_name), cont_type="micro-1.5", storage="cold_4").well(0)
+sfgfp_pcroe_out_tube = p.ref(expid("amplified",experiment_name), cont_type="micro-1.5", storage="cold_20").well(0)
 
 # Temporary tubes for use, then discarded
 mastermix_well = p.ref("mastermix", cont_type="micro-1.5", storage="cold_4",  discard=True).well(0)
 water_tube =     p.ref("water",     cont_type="micro-1.5", storage="ambient", discard=True).well(0)
 pcr_plate =      p.ref("pcr_plate", cont_type="96-pcr",    storage="cold_4",  discard=True)
 if 'run_absorbance' in options:
-    abs_plate = p.ref("abs_plate", cont_type="96-flat", storage="cold_4", discard=True)
+    abs_plate = p.ref("abs_plate", cont_type="96-flat", storage="cold_20", discard=False)
 
 # Initialize all existing inventory
 all_inventory_wells = [template_tube] + primer_wells
@@ -162,6 +163,7 @@ if 'run_gel' in options:
 
 #---------------------------------------------------------
 # Absorbance dilution series. Take 1ul out of the 25ul pcr plate wells
+# Good overview here: http://bitesizebio.com/13501/dna-concentration-purity/
 #
 if 'run_absorbance' in options:
     p.unseal(pcr_plate)
@@ -173,6 +175,7 @@ if 'run_absorbance' in options:
     p.transfer(pcr_plate.wells(["A1","B1","C1"]), abs_plate.wells(["A1","B1","C1"]), ul(1), mix_after=True, mix_vol=ul(5))
     p.transfer(abs_plate.wells(["A1","B1","C1"]), abs_plate.wells(["A2","B2","C2"]), ul(1), mix_after=True, mix_vol=ul(5))
     p.transfer(abs_plate.wells(["A2","B2","C2"]), abs_plate.wells(["A3","B3","C3"]), ul(1), mix_after=True, mix_vol=ul(5))
+    
     for wavelength in [260, 280, 320]:
         p.absorbance(abs_plate, abs_plate.wells(abs_wells),
                      "{}:nanometer".format(wavelength), exp_id("abs_{}".format(wavelength)), flashes=25)
