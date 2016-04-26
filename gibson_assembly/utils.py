@@ -13,6 +13,7 @@ import requests
 import logging
 import json
 import sys
+import numpy
 
 #http debugging
 try:
@@ -76,16 +77,17 @@ def touchdown(fromC, toC, durations, stepsize=2, meltC=98, extC=72):
     def td(temp, dur): return {"temperature":"{:2g}:celsius".format(temp), "duration":"{:d}:second".format(dur)}
 
     return [{"cycles": 1, "steps": [td(meltC, durations[0]), td(C, durations[1]), td(extC, durations[2])]}
-            for C in np.arange(fromC, toC-stepsize, -stepsize)]
+            for C in numpy.arange(fromC, toC-stepsize, -stepsize)]
 
 def convert_ug_to_pmol(ug_dsDNA, num_nts):
     """Convert ug dsDNA to pmol"""
     return float(ug_dsDNA)/num_nts * (1e6 / 660.0)
 
-def expid(val):
+def expid(val,experiment_name):
     """Generate a unique ID per experiment"""
     return "{}_{}".format(experiment_name, val)
 
 def ul(microliters):
     """Unicode function name for creating microliter volumes"""
     return Unit(microliters,"microliter")
+

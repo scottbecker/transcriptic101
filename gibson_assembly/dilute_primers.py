@@ -13,8 +13,8 @@ inv = {
 
 if "--test" in sys.argv:
     test_inv = {
-        'sfgfp_puc19_primer_forward_100uM':  'ct18wuc48fuj4a', # inventory; micro-1.5, cold_4, 100uM
-        'sfgfp_puc19_primer_reverse_100uM':  'ct18x5fg3h448c', # inventory; micro-1.5, cold_4, 100uM
+        'sfgfp_puc19_primer_forward_100uM':  'ct18x624ssz78h', # inventory; micro-1.5, cold_4, 100uM
+        'sfgfp_puc19_primer_reverse_100uM':  'ct18x624rxwrbt', # inventory; micro-1.5, cold_4, 100uM
     }
     inv.update(test_inv)
 

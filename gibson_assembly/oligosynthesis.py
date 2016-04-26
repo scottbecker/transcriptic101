@@ -23,6 +23,9 @@ def get_synthesized_oligo_tube_protocol(tube_name, sequence):
                        cont_type="micro-1.5",
                        storage="cold_20", discard=False)
     
+    dna_tube.well(0).properties = {'Molar Concentration':'100uM',
+                                   'original moles':'25nm'}
+    
     p.oligosynthesize([{"sequence": sequence,
                         "destination": dna_tube.well(0),
                         "scale": scale,
@@ -38,11 +41,11 @@ def get_synthesized_oligo_tube_protocol(tube_name, sequence):
     #how do you go from scale and desired concentration to volume --> n = CV --> V = n/C --> V = 25nmol / 100uM = 25nmol / (100E3 nmol / 1L)
     #          = 2.5E-4 L = 250 uL
     
-                    #convert to nM     #convert to uL
-    te_volume = 25 / pow(100, 3) * pow(10, 6) 
+                      #convert 100uM to nM #convert to uL
+    te_volume = 25 / (100 * pow(10, 3)) * pow(10, 6) 
     
     #add 250uL
-    p.provision(inv["te"], dna_tube.well(0), ul(250))
+    p.provision(inv["te"], dna_tube.well(0), ul(te_volume))
 
     #spin
     p.spin(dna_tube, '2000:g', '30:second')

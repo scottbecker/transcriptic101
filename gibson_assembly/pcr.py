@@ -5,7 +5,7 @@ Derived from Brian Naughton @ http://blog.booleanbiotech.com/genetic_engineering
 """
 import sys
 import json
-from autoprotocol.protocol import Protocol
+from custom_protocol import CustomProtocol as Protocol
 from utils import (ul, expid, init_inventory_well, touchdown,
                    dead_volume)
 import numpy
@@ -112,11 +112,11 @@ p.provision(inv["water"], water_tube, ul(500))
 #
 #
 
-# Mastermix tube will have 96ul of stuff, leaving space for 4x1ul aliquots of template
+# Mastermix tube will have 96ul of stuff, leaving space for 3x1ul aliquots of template
 p.transfer(water_tube,                mastermix_well, ul(63))
-p.transfer(q5_buffer_well, mastermix_well, ul(20), mix_before=True, mix_vol=ul(20),mix_after=True)
-p.transfer(q5_poly_well, mastermix_well, ul(1), mix_before=True, mix_vol=ul(5),mix_after=True)
-p.transfer(dNTP_well, mastermix_well, ul(2), mix_before=True, mix_vol=ul(5),mix_after=True)
+p.transfer(q5_buffer_well, mastermix_well, ul(20), mix_before=True, mix_vol=ul(20), mix_after=True)
+p.transfer(q5_poly_well, mastermix_well, ul(1), mix_before=True, mix_vol=ul(5), mix_after=True)
+p.transfer(dNTP_well, mastermix_well, ul(2), mix_before=True, mix_vol=ul(5), mix_after=True)
 p.transfer(primer_wells[0], mastermix_well, ul(5), mix_before=True, mix_vol=ul(10), mix_after=True)
 p.transfer(primer_wells[1], mastermix_well, ul(5), mix_before=True, mix_vol=ul(10), mix_after=True)
 p.mix(mastermix_well, volume="48:microliter", repetitions=10)
@@ -128,7 +128,7 @@ p.transfer(mastermix_well, pcr_plate.wells(["A2"]),           ul(24)) # acknowle
 p.mix(pcr_plate.wells(["A1","B1","C1","A2"]), volume=ul(12), repetitions=10)
 
 # Finally add template
-p.transfer(template_tube,  pcr_plate.wells(["A1","B1","C1"]), ul(1))
+p.transfer(template_tube,  pcr_plate.wells(["A1","B1","C1"]), ul(1), mix_after=True, mix_vol=ul(5))
 p.mix(pcr_plate.wells(["A1","B1","C1"]), volume=ul(12.5), repetitions=10)
 
 # ---------------------------------------------------------
@@ -147,30 +147,29 @@ cycles = [{"cycles":  1, "steps": [{"temperature": "98:celsius", "duration": "30
      {"cycles":  1, "steps": [{"temperature": "72:celsius", "duration": "2:minute"}]}]
 p.seal(pcr_plate)
 p.thermocycle(pcr_plate, cycles, volume=ul(25))
-
+p.unseal(pcr_plate)
 # --------------------------------------------------------
 # Run a gel to hopefully see a 740bp fragment
 #
 if 'run_gel' in options:
-    p.unseal(pcr_plate)
     p.mix(pcr_plate.wells(["A1","B1","C1","A2"]), volume=ul(12.5), repetitions=10)
-    p.transfer(pcr_plate.wells(["A1","B1","C1","A2"]), pcr_plate.wells(["D1","E1","F1","D2"]),
-               [ul(2), ul(4), ul(8), ul(8)])
     p.transfer(water_tube, pcr_plate.wells(["D1","E1","F1","D2"]),
-               [ul(18),ul(16),ul(12),ul(12)], mix_after=True, mix_vol=ul(10))
+               [ul(18),ul(16),ul(12),ul(12)])
+    p.transfer(pcr_plate.wells(["A1","B1","C1","A2"]), pcr_plate.wells(["D1","E1","F1","D2"]),
+               [ul(2), ul(4), ul(8), ul(8)], mix_after=True, mix_vol=ul(10))    
     p.gel_separate(pcr_plate.wells(["D1","E1","F1","D2"]),
                    ul(20), "agarose(10,2%)", "ladder1", "10:minute", expid("gel", experiment_name))
+
 
 #---------------------------------------------------------
 # Absorbance dilution series. Take 1ul out of the 25ul pcr plate wells
 # Good overview here: http://bitesizebio.com/13501/dna-concentration-purity/
 #
 if 'run_absorbance' in options:
-    p.unseal(pcr_plate)
     abs_wells = ["A1","B1","C1","A2","B2","C2","A3","B3","C3"]
 
     p.transfer(water_tube, abs_plate.wells(abs_wells[0:6]), ul(10))
-    p.transfer(water_tube, abs_plate.wells(abs_wells[6:9]), ul(9))
+    p.transfer(water_tube, abs_plate.wells(abs_wells[6:9]), ul(9), ignore_mix_after_warning=True)
 
     p.transfer(pcr_plate.wells(["A1","B1","C1"]), abs_plate.wells(["A1","B1","C1"]), ul(1), mix_after=True, mix_vol=ul(5))
     p.transfer(abs_plate.wells(["A1","B1","C1"]), abs_plate.wells(["A2","B2","C2"]), ul(1), mix_after=True, mix_vol=ul(5))
@@ -178,7 +177,9 @@ if 'run_absorbance' in options:
     
     for wavelength in [260, 280, 320]:
         p.absorbance(abs_plate, abs_plate.wells(abs_wells),
-                     "{}:nanometer".format(wavelength), exp_id("abs_{}".format(wavelength)), flashes=25)
+                     "{}:nanometer".format(wavelength), expid("abs_{}".format(wavelength), experiment_name), 
+                     flashes=25)
+        
 
 ## -----------------------------------------------------------------------------
 ## Sanger sequencing: https://developers.transcriptic.com/docs/sanger-sequencing

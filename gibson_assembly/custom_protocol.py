@@ -1,5 +1,6 @@
 from autoprotocol import Unit
 from autoprotocol.protocol import Protocol
+from utils import ul
 
 class CustomProtocol(Protocol):
     def transfer(self, source, dest, volume, one_source=False, one_tip=False, 
@@ -143,19 +144,16 @@ class CustomProtocol(Protocol):
         if type(volume) == list:
             min_volume = min(volume)
         else:
-            min_volume = volume
+            min_volume = volume        
         
-        if not dispense_speed and not aspirate_speed:
-            if min_volume < Unit.fromstring('100:microliter'):
-                dispense_speed = str(min_volume)+'/second'
-                aspirate_speed = str(min_volume)+'/second'
-                
-        if 'mix_before' in mix_kwargs:
-            mix_volume_b = mix_kwargs.get("mix_vol_b") or mix_kwargs.get("mix_vol") or volume/2
-            if mix_kwargs.get('mix_vol') < Unit.fromstring('100:microliter'):
-                mix_vol = str(min_volume)+'/second'            
+        if min_volume < ul(10) and not mix_kwargs.get('mix_after') \
+           and not mix_kwargs.get('ignore_mix_after_warning'):
+            raise Exception('mix_after required for <10uL of solution to ensure complete transfer. \n'
+                            'Ensure you have are pipetting into something big enough and set this')
             
-        
+        if 'ignore_mix_after_warning' in mix_kwargs:
+            del mix_kwargs['ignore_mix_after_warning']
+            
         super().transfer(source, dest, volume, one_source=one_source, one_tip=one_tip, 
               aspirate_speed=aspirate_speed, dispense_speed=dispense_speed, 
               aspirate_source=aspirate_source, dispense_target=dispense_target, 
