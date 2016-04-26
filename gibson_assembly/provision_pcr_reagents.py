@@ -44,5 +44,6 @@ q5_enhancer_well.name = 'Q5_Enhancer'
 dNTP_well = reagent_plate.wells(["B1"])[0]
 p.provision(inv["dNTP_Mixture_10mM"], dNTP_well, ul(11))
 dNTP_well.name = 'dNTP_Mixture_10mM'
+dNTP_well.properties = {'Molar Concentration':'10mM'}    
 
 print(json.dumps(p.as_dict(), indent=2))
