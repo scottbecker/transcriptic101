@@ -49,9 +49,10 @@ def dilute_primer(source_well, destination_well, destination_volume_uL,
 
     p.transfer(source_well, destination_well, ul(source_volume_uL), 
                mix_before=True, 
+               mix_after=True,
                mix_vol=min(ul(source_volume_uL*5),
                            #prevent drawing more from the source well than is retrievable
-                           source_well.volume-source_well.container.container_type.safe_min_volume_ul))
+                           source_well.volume-source_well.container.container_type.dead_volume_ul))
     p.mix(destination_well, volume=ul(destination_volume_uL/2.0), repetitions=10)
     
 

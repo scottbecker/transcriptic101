@@ -42,8 +42,8 @@ inv = {
     'pcr_reagent_plate':                 'ct18x95j499zx4', # inventory: A1: Q5 polymerase,
                                                            # A2: Buffer, A3: Enhancer, B1: dNTP 10mM
     'water':                             'rs17gmh5wafm5p', # catalog; Autoclaved MilliQ H2O
-    'sfgfp_puc19_primer_forward_10uM':   'ct18wxfe2dxmmd', # inventory; micro-1.5, cold_20, 10uM
-    'sfgfp_puc19_primer_reverse_10uM':   'ct18wxfdgqfyjp', # inventory; micro-1.5, cold_20, 10uM
+    'sfgfp_puc19_primer_forward_10uM':   'ct18x9wbfksyc3', # inventory; micro-1.5, cold_20, 10uM
+    'sfgfp_puc19_primer_reverse_10uM':   'ct18x9wbfm4v8c', # inventory; micro-1.5, cold_20, 10uM
     'sfgfp_2nM':                         'ct18vs7cmjat2c', # inventory; sfGFP tube #1, micro-1.5, cold_20, 2.12nM, 1ng/uL
 }
 
