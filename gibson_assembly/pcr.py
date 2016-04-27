@@ -19,21 +19,15 @@ p = Protocol()
 experiment_name = "sfgfp_pcr_v1"
 template_length = 726
 
-_options = {'run_gel'        : True,  # run a gel to see the plasmid size
-            'run_absorbance' : True, # check absorbance at 260/280/320
-            'run_sanger'     : False} # sanger sequence the new sequence
+_options = {
+    'run_gel'        : True,  # run a gel to see the plasmid size
+}
 options = {k for k,v in _options.items() if v is True}
 
 # ---------------------------------------------------
 # Inventory and provisioning
 # https://developers.transcriptic.com/v1.0/docs/containers
 #
-# 'sfgfp2':              'ct17yx8h77tkme', # inventory; sfGFP tube #2, micro-1.5, cold_20
-# 'sfgfp_puc19_primer1': 'ct17z9542mrcfv', # inventory; micro-2.0, cold_4
-# 'sfgfp_puc19_primer2': 'ct17z9542m5ntb', # inventory; micro-2.0, cold_4
-# 'sfgfp_idt_1ngul':     'ct184nnd3rbxfr', # inventory; micro-1.5, cold_4, (ERROR: no template)
-#
-
 
 #@ToDo: convert sfgfp from 10uM to 100uM
 #@ToDo: confirm my 1ng/uL is correct
@@ -160,47 +154,6 @@ if 'run_gel' in options:
     p.gel_separate(pcr_plate.wells(["D1","E1","F1","D2"]),
                    ul(20), "agarose(10,2%)", "ladder1", "10:minute", expid("gel", experiment_name))
 
-
-#---------------------------------------------------------
-# Absorbance dilution series. Take 1ul out of the 25ul pcr plate wells
-# Good overview here: http://bitesizebio.com/13501/dna-concentration-purity/
-#
-if 'run_absorbance' in options:
-    abs_wells = ["A1","B1","C1","A2","B2","C2","A3","B3","C3"]
-
-    p.transfer(water_tube, abs_plate.wells(abs_wells[0:6]), ul(10))
-    p.transfer(water_tube, abs_plate.wells(abs_wells[6:9]), ul(9), ignore_mix_after_warning=True)
-
-    p.transfer(pcr_plate.wells(["A1","B1","C1"]), abs_plate.wells(["A1","B1","C1"]), ul(1), mix_after=True, mix_vol=ul(5))
-    p.transfer(abs_plate.wells(["A1","B1","C1"]), abs_plate.wells(["A2","B2","C2"]), ul(1), mix_after=True, mix_vol=ul(5))
-    p.transfer(abs_plate.wells(["A2","B2","C2"]), abs_plate.wells(["A3","B3","C3"]), ul(1), mix_after=True, mix_vol=ul(5))
-    
-    for wavelength in [260, 280, 320]:
-        p.absorbance(abs_plate, abs_plate.wells(abs_wells),
-                     "{}:nanometer".format(wavelength), expid("abs_{}".format(wavelength), experiment_name), 
-                     flashes=25)
-        
-
-## -----------------------------------------------------------------------------
-## Sanger sequencing: https://developers.transcriptic.com/docs/sanger-sequencing
-## "Each reaction should have a total volume of 15 ul and we recommend the following composition of DNA and primer:
-##  PCR product (40 ng), primer (1 ul of a 10 uM stock)"
-##
-##  By comparing to the gel ladder concentration (175ng/lane), it looks like 5ul of PCR product has approximately 30ng of DNA
-##
-#if 'run_sanger' in options:
-    #p.unseal(pcr_plate)
-    #seq_wells = ["G1","G2"]
-    #for primer_num, seq_well in [(0, seq_wells[0]),(1, seq_wells[1])]:
-        #p.transfer(dilute_primer_tubes[primer_num], pcr_plate.wells([seq_well]),
-                   #ul(1), mix_before=True, mix_vol=ul(50))
-        #p.transfer(pcr_plate.wells(["A1"]), pcr_plate.wells([seq_well]),
-                   #ul(5), mix_before=True, mix_vol=ul(10))
-        #p.transfer(water_tube, pcr_plate.wells([seq_well]), ul(9))
-
-    #p.mix(pcr_plate.wells(seq_wells), volume=ul(7.5), repetitions=10)
-    #p.sangerseq(pcr_plate, pcr_plate.wells(seq_wells[0]).indices(), expid("seq1",experiment_name))
-    #p.sangerseq(pcr_plate, pcr_plate.wells(seq_wells[1]).indices(), expid("seq2",experiment_name))
 
 # -------------------------------------------------------------------------
 # Then consolidate to one tube. Leave at least 3ul dead volume in each tube
