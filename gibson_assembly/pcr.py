@@ -70,12 +70,11 @@ dNTP_well = pcr_reagent_plate.wells(["B1"])[0]
 # New inventory resulting from this experiment
 sfgfp_pcroe_out_tube = p.ref(expid("amplified",experiment_name), cont_type="micro-1.5", storage="cold_20").well(0)
 
-# Temporary tubes for use, then discarded
-mastermix_well = p.ref("mastermix", cont_type="micro-1.5", storage="cold_4",  discard=True).well(0)
-water_tube =     p.ref("water",     cont_type="micro-1.5", storage="ambient", discard=True).well(0)
-pcr_plate =      p.ref("pcr_plate", cont_type="96-pcr",    storage="cold_4",  discard=True)
-if 'run_absorbance' in options:
-    abs_plate = p.ref("abs_plate", cont_type="96-flat", storage="cold_20", discard=False)
+# Temporary tubes for use, then discarded (you can't set storage if you are going to discard)
+mastermix_well = p.ref("mastermix", cont_type="micro-1.5", discard=True).well(0)
+water_well =     p.ref("water",     cont_type="micro-1.5", discard=True).well(0)
+pcr_plate =      p.ref("pcr_plate", cont_type="96-pcr", discard=True)
+
 
 # Initialize all existing inventory
 all_inventory_wells = [template_tube] + primer_wells
@@ -85,7 +84,7 @@ for well in all_inventory_wells:
 # -----------------------------------------------------
 # Provision water once, for general use
 #
-p.provision(inv["water"], water_tube, ul(500))
+p.provision(inv["water"], water_well, ul(500))
 
 # -----------------------------------------------------
 # Q5 PCR protocol
@@ -107,7 +106,7 @@ p.provision(inv["water"], water_tube, ul(500))
 #
 
 # Mastermix tube will have 96ul of stuff, leaving space for 3x1ul aliquots of template
-p.transfer(water_tube,                mastermix_well, ul(63))
+p.transfer(water_well,                mastermix_well, ul(63))
 p.transfer(q5_buffer_well, mastermix_well, ul(20), mix_before=True, mix_vol=ul(20), mix_after=True)
 p.transfer(q5_poly_well, mastermix_well, ul(1), mix_before=True, mix_vol=ul(5), mix_after=True)
 p.transfer(dNTP_well, mastermix_well, ul(2), mix_before=True, mix_vol=ul(5), mix_after=True)
@@ -147,7 +146,7 @@ p.unseal(pcr_plate)
 #
 if 'run_gel' in options:
     p.mix(pcr_plate.wells(["A1","B1","C1","A2"]), volume=ul(12.5), repetitions=10)
-    p.transfer(water_tube, pcr_plate.wells(["D1","E1","F1","D2"]),
+    p.transfer(water_well, pcr_plate.wells(["D1","E1","F1","D2"]),
                [ul(18),ul(16),ul(12),ul(12)])
     p.transfer(pcr_plate.wells(["A1","B1","C1","A2"]), pcr_plate.wells(["D1","E1","F1","D2"]),
                [ul(2), ul(4), ul(8), ul(8)], mix_after=True, mix_vol=ul(10))    
