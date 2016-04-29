@@ -61,7 +61,7 @@ def dilute_primer(source_well, destination_well, destination_volume_uL,
 #make destination tubes
 p = Protocol()
 #remove ## after oligosynth is done
-dilute_primer_wells = [##p.ref('sfgfp_puc19_primer_forward_10uM', cont_type="micro-1.5", storage="cold_20").well(0),
+dilute_primer_wells = [p.ref('sfgfp_puc19_primer_forward_10uM', cont_type="micro-1.5", storage="cold_20").well(0),
                        p.ref('sfgfp_puc19_primer_reverse_hindiii_10uM', cont_type="micro-1.5", storage="cold_20").well(0)]
 
 #set concentration property on wells
@@ -69,8 +69,8 @@ for well in dilute_primer_wells:
     well.properties = {'Molar Concentration':'10uM'}    
 
 #remove ## after oligosynth is done
-primer_wells = [##p.ref('sfgfp_puc19_primer_forward_100uM', id=inv['sfgfp_puc19_primer_forward_100uM'], 
-                ##      cont_type="micro-1.5", storage="cold_20").well(0),
+primer_wells = [p.ref('sfgfp_puc19_primer_forward_100uM', id=inv['sfgfp_puc19_primer_forward_100uM'], 
+                      cont_type="micro-1.5", storage="cold_20").well(0),
                 p.ref('sfgfp_puc19_primer_reverse_hindiii_100uM', id=inv['sfgfp_puc19_primer_reverse_hindiii_100uM'], 
                              cont_type="micro-1.5", storage="cold_20").well(0)]
 
