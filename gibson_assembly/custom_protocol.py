@@ -166,7 +166,8 @@ class CustomProtocol(Protocol):
                    flowrate="100:microliter/second", aspirate_speed=None,
                    aspirate_source=None, distribute_target=None,
                    pre_buffer=None, disposal_vol=None, transit_vol=None,
-                   blowout_buffer=None, tip_type=None, new_group=False):
+                   blowout_buffer=None, tip_type=None, new_group=False,
+                   ignore_mix_after_warning=False):
         """
         Distribute liquid from source well(s) to destination wells(s).
     
@@ -328,14 +329,15 @@ class CustomProtocol(Protocol):
                 self.transfer(source,dest_well,volume,mix_before=mix_before,
                               mix_after=mix_after,mix_vol=mix_vol,
                               aspirate_speed=aspirate_speed, 
-                              aspirate_source=aspirate_source, dispense_target=dispense_target, 
+                              aspirate_source=aspirate_source, 
                               pre_buffer=pre_buffer, disposal_vol=disposal_vol, 
                               transit_vol=transit_vol, blowout_buffer=blowout_buffer,
-                              tip_type=tip_type, new_group=new_group)                               
+                              tip_type=tip_type, new_group=new_group,
+                              ignore_mix_after_warning=ignore_mix_after_warning)                               
         else:
             super().distribute(source, dest, volume, allow_carryover=False,
                                mix_before=False, mix_vol=None, repetitions=10,
                                flowrate="100:microliter/second", aspirate_speed=None,
                                aspirate_source=None, distribute_target=None,
                                pre_buffer=None, disposal_vol=None, transit_vol=None,
-                               blowout_buffer=None, tip_type=None, new_group=False):
+                               blowout_buffer=None, tip_type=None, new_group=False)

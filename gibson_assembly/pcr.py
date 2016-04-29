@@ -16,7 +16,7 @@ p = Protocol()
 # ---------------------------------------------------
 # Set up experiment
 #
-experiment_name = "sfgfp_pcr_v1"
+experiment_name = "sfgfp_pcr_ecori_hindiii_v1"
 template_length = 726
 
 _options = {
@@ -36,7 +36,7 @@ inv = {
                                                            # C1: exosap
     'water':                             'rs17gmh5wafm5p', # catalog; Autoclaved MilliQ H2O
     'sfgfp_puc19_primer_forward_10uM':   'ct18x9wbfksyc3', # inventory; micro-1.5, cold_20, 10uM
-    'sfgfp_puc19_primer_reverse_10uM':   'ct18x9wbfm4v8c', # inventory; micro-1.5, cold_20, 10uM
+    'sfgfp_puc19_primer_reverse_10uM':   '', # inventory; micro-1.5, cold_20, 10uM
     'sfgfp_2nM':                         'ct18vs7cmjat2c', # inventory; sfGFP tube #1, micro-1.5, cold_20, 2.12nM, 1ng/uL
 }
 
@@ -45,8 +45,8 @@ if "--test" in sys.argv:
         'pcr_reagent_plate':                'ct18x92yfcbhhz', # inventory: A1: Q5 polymerase,
                                                               # A2: Buffer, A3: Enhancer, B1: dNTP 10mM
                                                               # C1: exosap
-        'sfgfp_puc19_primer_forward_10uM':  'ct18x626u9nvne', # inventory; micro-1.5, cold_20, 10uM
-        'sfgfp_puc19_primer_reverse_10uM':  'ct18x626u9yshq', # inventory; micro-1.5, cold_20, 10uM
+        'sfgfp_puc19_primer_forward_10uM':  'ct18x626u9nvne', # inventory; micro-1.5, cold_20, 10uM;  ecori
+        'sfgfp_puc19_primer_reverse_10uM':  'ct18xkedwwjtwu', # inventory; micro-1.5, cold_20, 10uM; sali
         'sfgfp_2nM':                        'ct18x62qg8km37', # inventory
     }
     inv.update(test_inv)
@@ -132,7 +132,7 @@ extension_time = int(max(2, numpy.ceil(template_length * (11.0/1000))))
 assert 0 < extension_time < 60, "extension time should be reasonable for PCR"
 
 cycles = [{"cycles":  1, "steps": [{"temperature": "98:celsius", "duration": "30:second"}]}] + \
-    touchdown(74.8, 59.8, [8, 25, extension_time], stepsize=1) + \ 
+    touchdown(74.8, 59.8, [8, 25, extension_time], stepsize=1) +\
     [{"cycles": 20, "steps": [{"temperature": "98:celsius", "duration": "8:second"},
                               {"temperature": "59.8:celsius", "duration": "25:second"},
                               {"temperature": "72:celsius", "duration": "{:d}:second".format(extension_time)}]},
@@ -152,6 +152,7 @@ if 'run_gel' in options:
     p.gel_separate(pcr_plate.wells(["D1","E1","F1","D2"]),
                    ul(20), "agarose(10,2%)", "ladder1", "10:minute", expid("gel", experiment_name))
 
+#@TODO: add cleanup and quantification step using picogreen assay
 
 # -------------------------------------------------------------------------
 # Then consolidate to one tube. Leave at least 3ul dead volume in each tube
