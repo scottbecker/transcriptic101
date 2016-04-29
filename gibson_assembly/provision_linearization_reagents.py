@@ -45,7 +45,7 @@ else:
                               cont_type="96-pcr", storage="cold_20")
 
 ecori_bamhi_well = reagent_plate.wells(["A1"])[0]
-#provisioning less than 10uL is dangerous do to pipetting mistakes (can't mix after)
+#provisioning less than 10uL is dangerous due to pipetting mistakes (can't mix after)
 re_volume = max(ul(10),ul(number_of_experiments*1)+dead_volume/2)
 p.provision(inv["EcoRI"], ecori_bamhi_well, re_volume)
 p.provision(inv["BamHI"], ecori_bamhi_well, re_volume)
