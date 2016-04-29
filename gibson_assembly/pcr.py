@@ -132,9 +132,9 @@ extension_time = int(max(2, numpy.ceil(template_length * (11.0/1000))))
 assert 0 < extension_time < 60, "extension time should be reasonable for PCR"
 
 cycles = [{"cycles":  1, "steps": [{"temperature": "98:celsius", "duration": "30:second"}]}] + \
-    touchdown(70, 61, [8, 25, extension_time], stepsize=0.5) + \
-    [{"cycles": 16, "steps": [{"temperature": "98:celsius", "duration": "8:second"},
-                              {"temperature": "61.1:celsius", "duration": "25:second"},
+    touchdown(74.8, 59.8, [8, 25, extension_time], stepsize=1) + \ 
+    [{"cycles": 20, "steps": [{"temperature": "98:celsius", "duration": "8:second"},
+                              {"temperature": "59.8:celsius", "duration": "25:second"},
                               {"temperature": "72:celsius", "duration": "{:d}:second".format(extension_time)}]},
      {"cycles":  1, "steps": [{"temperature": "72:celsius", "duration": "2:minute"}]}]
 p.seal(pcr_plate)

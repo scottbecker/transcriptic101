@@ -72,12 +72,16 @@ def init_inventory_well(well, headers=TSC_HEADERS, org_name=ORG_NAME):
     return True
 
 def touchdown(fromC, toC, durations, stepsize=2, meltC=98, extC=72):
-    """Touchdown PCR protocol generator"""
+    """Touchdown PCR protocol generator
+    
+    Doesn't include the toC as a step.
+    
+    """
     assert 0 < stepsize < toC < fromC
     def td(temp, dur): return {"temperature":"{:2g}:celsius".format(temp), "duration":"{:d}:second".format(dur)}
 
     return [{"cycles": 1, "steps": [td(meltC, durations[0]), td(C, durations[1]), td(extC, durations[2])]}
-            for C in numpy.arange(fromC, toC-stepsize, -stepsize)]
+            for C in numpy.arange(fromC, toC, -stepsize)]
 
 def convert_ug_to_pmol(ug_dsDNA, num_nts):
     """Convert ug dsDNA to pmol"""
