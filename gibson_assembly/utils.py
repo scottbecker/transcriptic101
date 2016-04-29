@@ -59,7 +59,7 @@ def init_inventory_well(well, headers=TSC_HEADERS, org_name=ORG_NAME):
     response.raise_for_status()
 
     container = response.json()
-    well_data = container['aliquots'][well.index]
+    well_data = list(filter(lambda w: w['well_idx'] == well.index,container['aliquots']))[0]
     well.name = "{}/{}".format(container["label"], well_data['name']) if well_data['name'] is not None else container["label"]
     well.properties = well_data['properties']
     well.volume = Unit(well_data['volume_ul'], 'microliter')
@@ -94,4 +94,10 @@ def expid(val,experiment_name):
 def ul(microliters):
     """Unicode function name for creating microliter volumes"""
     return Unit(microliters,"microliter")
+
+def assert_valid_volume(wells):
+    """For wells that we have aspirated volume from, make sure that we haven't requested more volume than could be aspirated
+    """
+    assert all([well.volume >= well.container.container_type.dead_volume_ul for well in wells])
+    
 
