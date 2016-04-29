@@ -29,12 +29,11 @@ options = {k for k,v in _options.items() if v is True}
 # https://developers.transcriptic.com/v1.0/docs/containers
 #
 
-#@ToDo: convert sfgfp from 10uM to 100uM
-#@ToDo: confirm my 1ng/uL is correct
 
 inv = {
     'pcr_reagent_plate':                 'ct18x95j499zx4', # inventory: A1: Q5 polymerase,
                                                            # A2: Buffer, A3: Enhancer, B1: dNTP 10mM
+                                                           # C1: exosap
     'water':                             'rs17gmh5wafm5p', # catalog; Autoclaved MilliQ H2O
     'sfgfp_puc19_primer_forward_10uM':   'ct18x9wbfksyc3', # inventory; micro-1.5, cold_20, 10uM
     'sfgfp_puc19_primer_reverse_10uM':   'ct18x9wbfm4v8c', # inventory; micro-1.5, cold_20, 10uM
@@ -45,6 +44,7 @@ if "--test" in sys.argv:
     test_inv = {
         'pcr_reagent_plate':                'ct18x92yfcbhhz', # inventory: A1: Q5 polymerase,
                                                               # A2: Buffer, A3: Enhancer, B1: dNTP 10mM
+                                                              # C1: exosap
         'sfgfp_puc19_primer_forward_10uM':  'ct18x626u9nvne', # inventory; micro-1.5, cold_20, 10uM
         'sfgfp_puc19_primer_reverse_10uM':  'ct18x626u9yshq', # inventory; micro-1.5, cold_20, 10uM
         'sfgfp_2nM':                        'ct18x62qg8km37', # inventory
@@ -74,7 +74,6 @@ sfgfp_pcroe_out_tube = p.ref(expid("amplified",experiment_name), cont_type="micr
 mastermix_well = p.ref("mastermix", cont_type="micro-1.5", discard=True).well(0)
 water_well =     p.ref("water",     cont_type="micro-1.5", discard=True).well(0)
 pcr_plate =      p.ref("pcr_plate", cont_type="96-pcr", discard=True)
-
 
 # Initialize all existing inventory
 all_inventory_wells = [template_tube] + primer_wells
@@ -142,7 +141,7 @@ p.seal(pcr_plate)
 p.thermocycle(pcr_plate, cycles, volume=ul(25))
 p.unseal(pcr_plate)
 # --------------------------------------------------------
-# Run a gel to hopefully see a 740bp fragment
+# Run a gel
 #
 if 'run_gel' in options:
     p.mix(pcr_plate.wells(["A1","B1","C1","A2"]), volume=ul(12.5), repetitions=10)

@@ -17,18 +17,24 @@ options = {}
 
 inv = {
     'water':    "rs17gmh5wafm5p",   # catalog; Autoclaved MilliQ H2O; ambient
-    "pUC19":    "rs17tcqmncjfsh",   # catalog; pUC19; cold_20
     "reagent_plate":    "",   # inventory; 10 units each enzyme / ul
 }
 
 if "--test" in sys.argv:
     test_inv = {
-        "reagent_plate":    "ct18xjsc7f5x6r",   # inventory; 10 units each enzyme / ul
+        "reagent_plate":    "ct18xjx6eb5u7j",   # inventory; 10 units each enzyme / ul
     }
     inv.update(test_inv)
 
-# Tubes and plates I use then discard
-re_tube    = p.ref("re_tube",    cont_type="micro-1.5", storage="cold_4", discard=True).well(0)
+
+reagent_plate = p.ref("re_reagent_plate", id=inv['reagent_plate'], 
+                      cont_type="96-pcr", storage="cold_20")
+
+ecori_bamhi_well = reagent_plate.wells(["A1"])[0]
+cutsmart_well = reagent_plate.wells(["B1"])[0]
+pUC19_well = reagent_plate.wells(["H12"])[0]
+
+# Tubes and plates we use and then discard
 water_tube = p.ref("water_tube", cont_type="micro-1.5", storage="cold_4", discard=True).well(0)
 pcr_plate  = p.ref("pcr_plate",  cont_type="96-pcr",    storage="cold_4", discard=True)
 
@@ -36,30 +42,36 @@ pcr_plate  = p.ref("pcr_plate",  cont_type="96-pcr",    storage="cold_4", discar
 puc19_cut_tube  = p.ref(expid("puc19_cut"), cont_type="micro-1.5", storage="cold_20").well(0)
 
 # -------------------------------------------------------------
+# Provisioning and diluting.
+# Diluted EcoRI can be used more than once
+#
+p.provision(inv["water"], water_tube, ul(500))
+
+# -------------------------------------------------------------
 # Restriction enzyme cutting pUC19
 # 3 experiments (1 without re)
 # 50ul total reaction volume for cutting 1ug of DNA:
+# 42uL water
 # 5ul CutSmart 10x
 # 1ul pUC19 1ml/ml or 1ug/ul (1ug of DNA)
 # 2ul EcoRI+BamHI (20 units each, >10 units per ug DNA)
+
 # 
 #
-p.transfer(water_tube,       re_tube, ul(117))
-p.provision(inv["CutSmart"], re_tube, ul(15))
-p.provision(inv["pUC19"],    re_tube, ul(3))
-p.mix(re_tube, volume=ul(60), repetitions=10)
-assert re_tube.volume == ul(120) + dead_volume["micro-1.5"]
 
-print("Volumes: re_tube:{} water_tube:{} EcoRI:{}".format(re_tube.volume, water_tube.volume, ecori_p10x_tube.volume))
-
-p.distribute(re_tube,         pcr_plate.wells(["A1","B1","A2"]), ul(40))
-p.distribute(water_tube,      pcr_plate.wells(["A2"]),           ul(10))
-p.distribute(ecori_tube, pcr_plate.wells(["A1","B1"]),      ul(10))
+p.distribute(water_tube, pcr_plate.wells(["A1","B1","A2"]), ul(42))
+p.distribute(pUC19_well, pcr_plate.wells(["A1","B1","A2"]), ul(1), 
+             mix_before=True, mix_after=True, mix_vol=ul(5))
+p.distribute(cutsmart_well, pcr_plate.wells(["A1","B1","A2"]), ul(5), 
+             mix_before=True, mix_after=True, mix_vol=ul(10))
+p.distribute(water_tube, pcr_plate.wells(["A2"]), ul(2))
+p.distribute(ecori_bamhi_well, pcr_plate.wells(["A1","B1"]), ul(2), 
+             mix_before=True, mix_after=True, mix_vol=ul(5))
 assert all(well.volume == ul(50) for well in pcr_plate.wells(["A1","B1","A2"]))
 
 p.mix(pcr_plate.wells(["A1","B1","A2"]), volume=ul(25), repetitions=10)
 
-# Incubation to induce cut, then heat inactivation of EcoRI
+# Incubation to induce cut, then heat inactivation of EcoRI+BamHI
 p.seal(pcr_plate)
 #NEB enzymes are time saver so they only need 15minutes
 p.incubate(pcr_plate, "warm_37", "15:minute", shaking=False)

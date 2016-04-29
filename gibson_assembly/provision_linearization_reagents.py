@@ -10,6 +10,22 @@ We provision in advance to reduce thaw/unthaw cycles of the main reagents
 
 NEB recommends storing at selling concentrations (so we don't dilute)
 
+A1 - Mix of EcoRI and BamHI at 10 units of each re / ul
+B1 - CutSmart
+H12 - pUC19
+
+
+
+To retrieve from this reagent plate:
+
+reagent_plate = p.ref("re_reagent_plate", id=inv['reagent_plate'], 
+                      cont_type="96-pcr", storage="cold_20")
+
+ecori_bamhi_well = reagent_plate.wells(["A1"])[0]
+cutsmart_well = reagent_plate.wells(["B1"])[0]
+pUC19_well = reagent_plate.wells(["H12"])[0]
+
+
 """
 
 
