@@ -161,4 +161,181 @@ class CustomProtocol(Protocol):
               transit_vol=transit_vol, blowout_buffer=blowout_buffer, 
               tip_type=tip_type, new_group=new_group,**mix_kwargs)
         
+    def distribute(self, source, dest, volume, allow_carryover=False,
+                   mix_before=False, mix_after=False, mix_vol=None, repetitions=10,
+                   flowrate="100:microliter/second", aspirate_speed=None,
+                   aspirate_source=None, distribute_target=None,
+                   pre_buffer=None, disposal_vol=None, transit_vol=None,
+                   blowout_buffer=None, tip_type=None, new_group=False):
+        """
+        Distribute liquid from source well(s) to destination wells(s).
     
+        For volumes under 10uL, multiple transfer operations will be used instead
+    
+    
+        Example Usage:
+    
+        .. code-block:: python
+    
+            p = Protocol()
+            sample_plate = p.ref("sample_plate",
+                                 None,
+                                 "96-flat",
+                                 storage="warm_37")
+            sample_source = p.ref("sample_source",
+                                  "ct32kj234l21g",
+                                  "micro-1.5",
+                                  storage="cold_20")
+    
+            p.distribute(sample_source.well(0),
+                         sample_plate.wells_from(0,8,columnwise=True),
+                         "200:microliter",
+                         mix_before=True,
+                         mix_vol="500:microliter",
+                         repetitions=20)
+    
+        Autoprotocol Output:
+    
+        .. code-block:: json
+    
+            "instructions": [
+              {
+                "groups": [
+                  {
+                    "distribute": {
+                      "to": [
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/0"
+                        },
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/12"
+                        },
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/24"
+                        },
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/36"
+                        },
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/48"
+                        },
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/60"
+                        },
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/72"
+                        },
+                        {
+                          "volume": "150.0:microliter",
+                          "well": "sample_plate/84"
+                        }
+                      ],
+                      "from": "sample_source/0",
+                      "mix_before": {
+                        "volume": "500:microliter",
+                        "repetitions": 20,
+                        "speed": "100:microliter/second"
+                      }
+                    }
+                  }
+                ],
+                "op": "pipette"
+              }
+            ]
+    
+        Parameters
+        ----------
+        source : Well, WellGroup
+            Well or wells to distribute liquid from.  If passed as a WellGroup
+            with set_volume() called on it, liquid will be automatically be
+            drawn from the wells specified using the fill_wells function.
+        dest : Well, WellGroup
+            Well or wells to distribute liquid to.
+        volume : str, Unit, list
+            Volume of liquid to be distributed to each destination well.  If a
+            single string or unit is passed to represent the volume, that
+            volume will be distributed to each destination well.  If a list of
+            volumes is provided, that volume will be distributed to the
+            corresponding well in the WellGroup provided. The length of the
+            volumes list must therefore match the number of wells in the
+            destination WellGroup if destination wells are recieving different
+            volumes.
+        allow_carryover : bool, optional
+            specify whether the same pipette tip can be used to aspirate more
+            liquid from source wells after the previous volume aspirated has
+            been depleted.
+        mix_before : bool, optional
+            Specify whether to mix the liquid in the destination well before
+            liquid is transferred.
+        mix_after : bool, optional
+            Specify whether to mix the liquid in the destination well after
+            liquid is transferred.
+        mix_vol : str, Unit, optional
+            Volume to aspirate and dispense in order to mix liquid in a wells
+            before liquid is distributed.
+        repetitions : int, optional
+            Number of times to aspirate and dispense in order to mix
+            liquid in a well before liquid is distributed.
+        flowrate : str, Unit, optional
+            Speed at which to mix liquid in well before liquid is distributed.
+        aspirate speed : str, Unit, optional
+            Speed at which to aspirate liquid from source well.  May not be
+            specified if aspirate_source is also specified. By default this is
+            the maximum aspiration speed, with the start speed being half of
+            the speed specified.
+        aspirate_source : fn, optional
+            Can't be specified if aspirate_speed is also specified.
+        distribute_target : fn, optional
+            A function that contains additional parameters for distributing to
+            target wells including depth, dispense_speed, and calibrated
+            volume.
+            If this parameter is specified, the same parameters will be
+            applied to every destination well.
+            Can't be specified if dispense_speed is also specified.
+        pre_buffer : str, Unit, optional
+            Volume of air aspirated before aspirating liquid.
+        disposal_vol : str, Unit, optional
+            Volume of extra liquid to aspirate that will be dispensed into
+            trash afterwards.
+        transit_vol : str, Unit, optional
+            Volume of air aspirated after aspirating liquid to reduce presence
+            of bubbles at pipette tip.
+        blowout_buffer : bool, optional
+            If true the operation will dispense the pre_buffer along with the
+            dispense volume.
+            Cannot be true if disposal_vol is specified.
+    
+        Raises
+        ------
+        RuntimeError
+            If no mix volume is specified for the mix_before instruction.
+        ValueError
+            If source and destination well(s) is/are not expressed as either
+            Wells or WellGroups.
+    
+        """    
+        
+
+        if volume < ul(10):
+            for dest_well in dest:
+                self.transfer(source,dest_well,volume,mix_before=mix_before,
+                              mix_after=mix_after,mix_vol=mix_vol,
+                              aspirate_speed=aspirate_speed, 
+                              aspirate_source=aspirate_source, dispense_target=dispense_target, 
+                              pre_buffer=pre_buffer, disposal_vol=disposal_vol, 
+                              transit_vol=transit_vol, blowout_buffer=blowout_buffer,
+                              tip_type=tip_type, new_group=new_group)                               
+        else:
+            super().distribute(source, dest, volume, allow_carryover=False,
+                               mix_before=False, mix_vol=None, repetitions=10,
+                               flowrate="100:microliter/second", aspirate_speed=None,
+                               aspirate_source=None, distribute_target=None,
+                               pre_buffer=None, disposal_vol=None, transit_vol=None,
+                               blowout_buffer=None, tip_type=None, new_group=False):
