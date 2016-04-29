@@ -25,6 +25,7 @@ inv = {
     "EcoRI":    "rs17ta8xftpdk6",   # catalog; EcoRI-HF; cold_20; 20 units/ul
     "BamHI":    "rs17ta8tz5ffby",   # catalog; BamHI-HF; cold_20; 20 units/ul
     "CutSmart": "rs17ta93g3y85t",   # catalog; CutSmart Buffer 10x; cold_20
+    "pUC19":    "rs17tcqmncjfsh",   # catalog; pUC19; cold_20
     'reagent_plate': '' #optional: only needed after the first run
 }
 
@@ -46,7 +47,8 @@ else:
 
 ecori_bamhi_well = reagent_plate.wells(["A1"])[0]
 #provisioning less than 10uL is dangerous due to pipetting mistakes (can't mix after)
-re_volume = max(ul(10),ul(number_of_experiments*1)+dead_volume/2)
+volume_per_experiment = ul(1)
+re_volume = max(ul(10),number_of_experiments*volume_per_experiment+dead_volume/2)
 p.provision(inv["EcoRI"], ecori_bamhi_well, re_volume)
 p.provision(inv["BamHI"], ecori_bamhi_well, re_volume)
 ecori_bamhi_well.name = 'EcoRI+BamHI'
@@ -54,7 +56,15 @@ ecori_bamhi_well.properties = {'Unit Concentration':'10 units/ul'}
 
 #there is an extra negative control for every 2 experiments so we use 3/2*experiments
 cutsmart_well = reagent_plate.wells(["B1"])[0]
-p.provision(inv["CutSmart"], cutsmart_well, ul((number_of_experiments*3/2)*5)+dead_volume)
+volume_per_experiment = ul(5)
+p.provision(inv["CutSmart"], cutsmart_well, number_of_experiments*3/2*volume_per_experiment+dead_volume)
 cutsmart_well.name = 'CutSmart 10x'
+
+pUC19_well = reagent_plate.wells(["H12"])[0]
+volume_per_experiment = ul(1)
+pUC19_volume = max(ul(10),number_of_experiments*volume_per_experiment+dead_volume)
+p.provision(inv["pUC19"], pUC19_well, pUC19_volume)
+pUC19_well.name = 'pUC19'
+pUC19_well.properties = {'Mass Concentration':'1 ug/ul'} 
 
 print(json.dumps(p.as_dict(), indent=2))
