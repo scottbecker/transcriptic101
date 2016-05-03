@@ -3,6 +3,115 @@ from autoprotocol.protocol import Protocol
 from utils import ul
 
 class CustomProtocol(Protocol):
+   
+    def __init__(self):
+        #catalog inventory
+        self.inv = {
+            "water"       : "rs17gmh5wafm5p", # catalog; Autoclaved MilliQ H2O; ambient
+            "DH5a"        : "rs16pbj944fnny", # catalog; Zymo DH5a; cold_80
+            "Gibson Mix"  : "rs16pfatkggmk5", # catalog; Gibson Mix (2X); cold_20
+            "LB Miller"   : "rs17bafcbmyrmh", # catalog; LB Broth Miller; cold_4
+            "Amp 100mgml" : "rs17msfk8ujkca", # catalog; Ampicillin 100mg/ml; cold_20
+            "pUC19"       : "rs17tcqmncjfsh", # catalog; pUC19; cold_20            
+            "M13_F"                       : "rs17tcpqwqcaxe", # catalog; M13 Forward (-41); cold_20 (1ul = 100pmol)
+            "M13_R"                       : "rs17tcph6e2qzh", # catalog; M13 Reverse (-48); cold_20 (1ul = 100pmol)
+            "SensiFAST_SYBR_No-ROX"       : "rs17knkh7526ha", # catalog; SensiFAST SYBR for qPCR      
+            # kits (must be used differently)
+            "lb-broth-100ug-ml-amp_6-flat" : "ki17sbb845ssx9", # catalog; ampicillin plates
+            "noAB-amp_6-flat" : "ki17reefwqq3sq" # catalog; no antibiotic plates            
+        }
+        
+        super(CustomProtocol,self).__init__()
+       
+    def ref(self, name, id=None, cont_type=None, storage=None, discard=None):
+        """
+        
+        Add a Ref object to the dictionary of Refs associated with this protocol
+        and return a Container with the id, container type and storage or
+        discard conditions specified.
+        
+        This custom version allows discard=True to overide storage
+    
+        Example Usage:
+    
+        .. code-block:: python
+    
+            p = Protocol()
+    
+            # ref a new container (no id specified)
+            sample_ref_1 = p.ref("sample_plate_1",
+                                 cont_type="96-pcr",
+                                 discard=True)
+    
+            # ref an existing container with a known id
+            sample_ref_2 = p.ref("sample_plate_2",
+                                 id="ct1cxae33lkj",
+                                 cont_type="96-pcr",
+                                 storage="ambient")
+    
+        Autoprotocol Output:
+    
+        .. code-block:: json
+    
+            {
+              "refs": {
+                "sample_plate_1": {
+                  "new": "96-pcr",
+                  "discard": true
+                },
+                "sample_plate_2": {
+                  "id": "ct1cxae33lkj",
+                  "store": {
+                    "where": "ambient"
+                  }
+                }
+              },
+              "instructions": []
+            }
+    
+        Parameters
+        ----------
+        name : str
+            name of the container/ref being created.
+        id : str
+            id of the container being created, from your organization's
+            inventory on http://secure.transcriptic.com.  Strings representing
+            ids begin with "ct".
+        cont_type : str, ContainerType
+            container type of the Container object that will be generated.
+        storage : {"ambient", "cold_20", "cold_4", "warm_37"}, optional
+            temperature the container being referenced should be stored at
+            after a run is completed.  Either a storage condition must be
+            specified or discard must be set to True.
+        discard : bool, optional
+            if no storage condition is specified and discard is set to True,
+            the container being referenced will be discarded after a run.
+    
+        Returns
+        -------
+        container : Container
+            Container object generated from the id and container type
+             provided.
+    
+        Raises
+        ------
+        RuntimeError
+            If a container previously referenced in this protocol (existant
+            in refs section) has the same name as the one specified.
+        RuntimeError
+            If no container type is specified.
+        RuntimeError
+            If no valid storage or discard condition is specified.
+    
+        """    
+        
+        if discard:
+            storage=None
+        
+        return super(CustomProtocol,self).ref(name, id=id, cont_type=cont_type, 
+                                              storage=storage, discard=discard)
+    
+    
     def transfer(self, source, dest, volume, one_source=False, one_tip=False, 
                 aspirate_speed=None, dispense_speed=None, 
                 aspirate_source=None, dispense_target=None, 
