@@ -36,7 +36,7 @@ inv = {
                                                            # C1: exosap
     'water':                             'rs17gmh5wafm5p', # catalog; Autoclaved MilliQ H2O
     'sfgfp_puc19_primer_forward_10uM':   'ct18x9wbfksyc3', # inventory; micro-1.5, cold_20, 10uM
-    'sfgfp_puc19_primer_reverse_10uM':   '', # inventory; micro-1.5, cold_20, 10uM
+    'sfgfp_puc19_primer_reverse_10uM':   'ct18xzb54nd7g3', # inventory; micro-1.5, cold_20, 10uM, hindiii
     'sfgfp_2nM':                         'ct18vs7cmjat2c', # inventory; sfGFP tube #1, micro-1.5, cold_20, 2.12nM, 1ng/uL
 }
 
