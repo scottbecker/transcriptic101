@@ -8,7 +8,7 @@ inv = {
     'water':                                  'rs17gmh5wafm5p', # catalog: autoclave milliq h2o
     'te':                                     'rs17pwyc754v9t', # catalog; TE
     'sfgfp_puc19_primer_forward_100uM':       'ct18wxfe2dxmmd', # inventory; micro-1.5, cold_4, 100uM
-    'reverse_primer_hindiii_sfGFP_pUC19_100uM':  '', # inventory; micro-1.5, cold_4, 100uM
+    'sfgfp_puc19_primer_reverse_hindiii_100uM':  'ct18xm348hdmrb', # inventory; micro-1.5, cold_4, 100uM
 }
 
 if "--test" in sys.argv:
