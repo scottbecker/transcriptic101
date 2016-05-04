@@ -25,6 +25,8 @@ except ImportError:
 #change this to 2 to show raw http request/responses
 http_client.HTTPConnection.debuglevel = 0
 
+experiment_name = ''
+
 # Transcriptic authorization
 
 
@@ -87,9 +89,13 @@ def convert_ug_to_pmol(ug_dsDNA, num_nts):
     """Convert ug dsDNA to pmol"""
     return float(ug_dsDNA)/num_nts * (1e6 / 660.0)
 
-def expid(val,experiment_name):
+def expid(val,expt_name=None):
     """Generate a unique ID per experiment"""
-    return "{}_{}".format(experiment_name, val)
+    global experiment_name
+    if not expt_name:
+        assert experiment_name, "Must set experiment name"
+        expt_name = experiment_name
+    return "{}_{}".format(expt_name, val)
 
 def ul(microliters):
     """Unicode function name for creating microliter volumes"""

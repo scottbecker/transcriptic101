@@ -1,19 +1,20 @@
 import sys
-
+from utils import (ul, expid, init_inventory_well, touchdown,
+                   dead_volume )
 def get_inventory():
     inv = {
         # my inventory
         "puc19_ecori_hindiii_puc19_cut": "ct18xzbzsz45b6", # inventory; pUC19 cut with EcoRI; cold_20
-        "sfgfp_pcr_ecori_hindiii_amplified"    : "ct18xzndsv4yqs", # inventory; sfGFP amplified to 40ng/ul; cold_4
-        "sfgfp_puc19_gibson_clone" : "", # inventory; assembled sfGFP; cold_4
+        "sfgfp_pcr_ecori_hindiii_amplified"    : "ct18xzndsv4yqs", # inventory; sfGFP amplified to 40ng/ul; cold_20
+        "sfgfp_puc19_gibson_clone" : "ct18y2qnrjqz7w", # inventory; assembled sfGFP; cold_20
     }
     
     if "--test" in sys.argv:
         test_inv =  {
             # my inventory
             "puc19_ecori_hindiii_puc19_cut": "ct18xkhwbwrbj6", # inventory; pUC19 cut with EcoRI; cold_20
-            "sfgfp_pcr_ecori_hindiii_amplified"    : "ct18xkegtgxzjw", # inventory; sfGFP amplified to 40ng/ul; cold_4
-            "sfgfp_puc19_gibson_clone" : "", # inventory; assembled sfGFP; cold_4
+            "sfgfp_pcr_ecori_hindiii_amplified"    : "ct18xkegtgxzjw", # inventory; sfGFP amplified to 40ng/ul; cold_20
+            "sfgfp_puc19_gibson_clone" : "ct18y29ytg9rd9", # inventory; assembled sfGFP; cold_20
         }
         inv.update(test_inv)
     
@@ -25,31 +26,32 @@ def get_inventory():
 #
 # "Optimized efficiency is 50–100 ng of vectors with 2 fold excess of inserts."
 # pUC19 is 20ng/ul (78ul total).
-# sfGFP is ~40ng/ul (48ul total)
-# Therefore 4ul of each gives 80ng and 160ng of vector and insert respectively
+# sfGFP is ~25ng/ul (48ul total)
+# Therefore 2.5ul of pUC19 and 4ul sfGFP of 50ng and 100ng of vector and insert respectively
 #
 
 def do_gibson_assembly(p, water_tube, clone_plate, puc19_cut_tube, sfgfp_pcroe_amp_tube):
     #
     # Combine all the Gibson reagents in one tube and thermocycle
     #
-    p.provision(p.inv["Gibson Mix"],   clone_plate.well(0), ul(10))
-    p.transfer(water_tube,           clone_plate.well(0), ul(2))
-    p.transfer(puc19_cut_tube,       clone_plate.well(0), ul(4))
+    p.provision(p.inv["NEBuilder_Master_Mix"], clone_plate.well(0), ul(10))
+    p.transfer(water_tube,           clone_plate.well(0), ul(3.5),
+               mix_after=True, mix_vol=ul(6))
+    p.transfer(puc19_cut_tube,       clone_plate.well(0), ul(2.5),
+               mix_after=True, mix_vol=ul(6))
     p.transfer(sfgfp_pcroe_amp_tube, clone_plate.well(0), ul(4),
-               mix_after=True, mix_vol=ul(10), repetitions=10)
+               mix_after=True, mix_vol=ul(10))
 
     p.seal(clone_plate)
     p.thermocycle(clone_plate,
-                  [{"cycles":  1, "steps": [{"temperature": "50:celsius", "duration": "16:minute"}]}],
-                  volume=ul(50))
+                  [{"cycles":  1, "steps": [{"temperature": "50:celsius ", "duration": "15:minute"}]}],
+                  volume=ul(20))
 
     #
     # Dilute assembled plasmid 4X according to the NEB Gibson assembly protocol (20ul->80ul)
     #
     p.unseal(clone_plate)
     p.transfer(water_tube, clone_plate.well(0), ul(60), mix_after=True, mix_vol=ul(40), repetitions=5)
-    return
 
 
 # --------------------------------------------------------------------------------------------------
@@ -69,17 +71,20 @@ def do_gibson_assembly(p, water_tube, clone_plate, puc19_cut_tube, sfgfp_pcroe_a
 #  15 ul of H2O. Add 2 ul of the diluted assembled product to competent cells."
 #
 
-def _do_transformation(control_pUC19=True):
+def _do_transformation(p, clone_plate,transform_plate, transform_tube,
+                       transctrl_tube, control_pUC19):
     #
     # Combine plasmid and competent bacteria in a pcr_plate and shock
     #
-    p.provision(inv["DH5a"], transform_tube,  ul(50))
-    p.transfer(clone_plate.well(0), transform_tube, ul(3), dispense_speed="10:microliter/second")
-    assert clone_plate.well(0).volume == ul(54), clone_plate.well(0).volume
+    p.provision(p.inv["DH5a"], transform_tube,  ul(50))
+    assert clone_plate.well(0).volume >= ul(6), clone_plate.well(0).volume
+    p.transfer(clone_plate.well(0), transform_tube, ul(3), dispense_speed="10:microliter/second",
+               mix_after=True,mix_vol=ul(10))
+    
 
     if control_pUC19:
-        p.provision(inv["DH5a"], transctrl_tube,  ul(50))
-        p.provision(inv["pUC19"], transctrl_tube, ul(1))
+        p.provision(p.inv["DH5a"], transctrl_tube,  ul(50))
+        p.provision(p.inv["pUC19"], transctrl_tube, ul(1))
 
     #
     # Heatshock the bacteria to transform using a PCR machine
@@ -89,10 +94,12 @@ def _do_transformation(control_pUC19=True):
         [{"cycles":  1, "steps": [{"temperature":  "4:celsius", "duration": "5:minute"}]},
          {"cycles":  1, "steps": [{"temperature": "37:celsius", "duration": "30:minute"}]}],
         volume=ul(50))
-    return
 
 
-def _transfer_transformed_to_plates():
+def _transfer_transformed_to_plates(p, transform_plate, transform_tube,
+                                    transform_tube_L, transctrl_tube,
+                                    transctrl_tube_L, amp_6_flat,
+                                    noAB_6_flat,control_pUC19):
     assert transform_tube.volume == ul(53), transform_tube.volume
     p.unseal(transform_plate)
 
@@ -105,12 +112,12 @@ def _transfer_transformed_to_plates():
     # Put more on ampicillin plates for more opportunities to get a colony
     # I use a dilution series since it's unclear how much to plate
     #
-    p.provision(inv["LB Miller"], transform_tube_L, ul(429))
+    p.provision(p.inv["LB Miller"], transform_tube_L, ul(445))
 
     #
     # Add the transformed cells and mix (use new mix op in case of different pipette)
     #
-    p.transfer(transform_tube, transform_tube_L, ul(50))
+    p.transfer(transform_tube, transform_tube_L, ul(50), mix_before=True)
     p.mix(transform_tube_L, volume=transform_tube_L.volume/2, repetitions=10)
 
     assert transform_tube.volume == dead_volume['96-pcr'] == ul(3), transform_tube.volume
@@ -132,7 +139,7 @@ def _transfer_transformed_to_plates():
         num_ctrl = 2
         assert num_ab_plates + num_ctrl <= 6
 
-        p.provision(inv["LB Miller"], transctrl_tube_L, ul(184)+dead_volume["micro-1.5"])
+        p.provision(p.inv["LB Miller"], transctrl_tube_L, ul(192)+dead_volume["micro-1.5"])
         p.transfer(transctrl_tube,    transctrl_tube_L, ul(48))
         p.mix(transctrl_tube_L, volume=transctrl_tube_L.volume/2, repetitions=10)
 
@@ -140,20 +147,25 @@ def _transfer_transformed_to_plates():
             p.spread(transctrl_tube_L, amp_6_flat.well(num_ab_plates+i), ul(55+i*10))
             p.spread(transctrl_tube_L, noAB_6_flat.well(num_ab_plates+i), ul(55+i*10))
 
-        assert transctrl_tube_L.volume == dead_volume["micro-1.5"], transctrl_tube_L.volume
-    return
+        assert transctrl_tube_L.volume >= dead_volume["micro-1.5"], transctrl_tube_L.volume
 
-
-def do_transformation(control_pUC19=True):
-    _do_transformation(control_pUC19)
-    _transfer_transformed_to_plates(control_pUC19)
+def do_transformation(p,clone_plate, transform_plate, transform_tube,
+                      transform_tube_L, transctrl_tube,
+                      transctrl_tube_L, amp_6_flat,
+                      noAB_6_flat, control_pUC19=True):
+    _do_transformation(p, clone_plate,transform_plate, transform_tube,
+                       transctrl_tube, control_pUC19)
+    _transfer_transformed_to_plates(p, transform_plate, transform_tube,
+                                    transform_tube_L, transctrl_tube,
+                                    transctrl_tube_L, amp_6_flat,
+                                    noAB_6_flat,control_pUC19)
 
 
 # ------------------------------------------------------
 # Measure growth in plates (photograph)
 #
 
-def measure_growth():
+def measure_growth(p, amp_6_flat, noAB_6_flat):
     #
     # Incubate and photograph 6-flat plates over 18 hours
     # to see blue or white colonies
@@ -164,27 +176,5 @@ def measure_growth():
             p.incubate(flat, "warm_37", "9:hour")
             p.uncover(flat)
             p.image_plate(flat, mode="top", dataref=expid("{}_t{}".format(flat_name, timepoint)))
-    return
 
 
-# ---------------------------------------------------------------
-# Sanger sequencing, TURNED OFF
-# Sequence to make sure assembly worked
-# 500ng plasmid, 1 ul of a 10 µM stock primer
-# "M13_F"       : "rs17tcpqwqcaxe", # catalog; M13 Forward (-41); cold_20 (1ul = 100pmol)
-# "M13_R"       : "rs17tcph6e2qzh", # catalog; M13 Reverse (-48); cold_20 (1ul = 100pmol)
-#
-def do_sanger_seq(p):
-    seq_primers = [p.inv["M13_F"], p.inv["M13_R"]]
-    seq_wells = ["G1","G2"]
-    p.unseal(pcr_plate)
-    for primer_num, seq_well in [(0, seq_wells[0]),(1, seq_wells[1])]:
-        p.provision(seq_primers[primer_num], pcr_plate.wells([seq_well]), ul(1))
-
-    p.transfer(pcr_plate.wells(["A1"]), pcr_plate.wells(seq_wells),  ul(5), mix_before=True, mix_vol=ul(10))
-    p.transfer(water_tube, pcr_plate.wells(seq_wells), ul(9))
-
-    p.mix(pcr_plate.wells(seq_wells), volume=ul(7.5), repetitions=10)
-    p.sangerseq(pcr_plate, pcr_plate.wells(seq_wells[0]).indices(), expid("seq1"))
-    p.sangerseq(pcr_plate, pcr_plate.wells(seq_wells[1]).indices(), expid("seq2"))
-    return

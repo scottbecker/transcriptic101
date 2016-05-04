@@ -18,7 +18,7 @@ options = {}
 
 inv = {
     'water':    "rs17gmh5wafm5p",   # catalog; Autoclaved MilliQ H2O; ambient
-    "reagent_plate":    "",   # inventory; 10 units each enzyme / ul
+    "reagent_plate":    "ct18xpszvkrxdb",   # inventory; 10 units each enzyme / ul
 }
 
 if "--test" in sys.argv:
@@ -41,8 +41,8 @@ for well in all_inventory_wells:
     init_inventory_well(well)
 
 # Tubes and plates we use and then discard
-water_tube = p.ref("water_tube", cont_type="micro-1.5", storage="cold_4", discard=True).well(0)
-pcr_plate  = p.ref("pcr_plate",  cont_type="96-pcr",    storage="cold_4", discard=True)
+water_tube = p.ref("water_tube", cont_type="micro-1.5", discard=True).well(0)
+pcr_plate  = p.ref("pcr_plate",  cont_type="96-pcr", discard=True)
 
 # The result of the experiment, a pUC19 cut by EcoRI and HindIII, goes in this tube for storage
 puc19_cut_tube  = p.ref(expid("puc19_cut",experiment_name), cont_type="micro-1.5", storage="cold_20").well(0)
@@ -87,8 +87,8 @@ p.thermocycle(pcr_plate, [{"cycles":  1, "steps": [{"temperature": "80:celsius",
 #
 p.unseal(pcr_plate)
 p.mix(pcr_plate.wells(["A1","B1","A2"]), volume=ul(25), repetitions=5)
-p.transfer(water_tube, pcr_plate.wells(["D1","E1","D2"]), ul(15), mix_after=True, mix_vol=ul(10))
-p.transfer(pcr_plate.wells(["A1","B1","A2"]), pcr_plate.wells(["D1","E1","D2"]), ul(8), mix_after=True)
+p.transfer(water_tube, pcr_plate.wells(["D1","E1","D2"]), ul(15))
+p.transfer(pcr_plate.wells(["A1","B1","A2"]), pcr_plate.wells(["D1","E1","D2"]), ul(8), mix_after=True, mix_vol=ul(10))
 assert all(well.volume == ul(20) + dead_volume["96-pcr"] for well in pcr_plate.wells(["D1","E1","D2"]))
 
 p.gel_separate(pcr_plate.wells(["D1","E1","D2"]), ul(20), "agarose(10,2%)", "ladder2", "15:minute", expid("gel",experiment_name))

@@ -10,6 +10,7 @@ class CustomProtocol(Protocol):
             "water"       : "rs17gmh5wafm5p", # catalog; Autoclaved MilliQ H2O; ambient
             "DH5a"        : "rs16pbj944fnny", # catalog; Zymo DH5a; cold_80
             "Gibson Mix"  : "rs16pfatkggmk5", # catalog; Gibson Mix (2X); cold_20
+            'NEBuilder_Master_Mix': 'rs18pc86ykcep6', # catalog; NEBuilder MasterMix
             "LB Miller"   : "rs17bafcbmyrmh", # catalog; LB Broth Miller; cold_4
             "Amp 100mgml" : "rs17msfk8ujkca", # catalog; Ampicillin 100mg/ml; cold_20
             "pUC19"       : "rs17tcqmncjfsh", # catalog; pUC19; cold_20            

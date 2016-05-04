@@ -11,8 +11,8 @@ inv = {
     "M13_F"                       : "rs17tcpqwqcaxe", # catalog; M13 Forward (-41); cold_20 (1ul = 100pmol)
     "M13_R"                       : "rs17tcph6e2qzh", # catalog; M13 Reverse (-48); cold_20 (1ul = 100pmol)
     "SensiFAST_SYBR_No-ROX"       : "rs17knkh7526ha", # catalog; SensiFAST SYBR for qPCR
-    "sfgfp_puc19_gibson_v1_clone" : "ct187rzdq9kd7q", # inventory; assembled sfGFP; cold_4
-    "sfgfp_puc19_gibson_v3_clone" : "ct188ejywa8jcv", # inventory; assembled sfGFP; cold_4
+    "sfgfp_puc19_gibson_v1_clone" : "", # inventory; assembled sfGFP; cold_4
+    "sfgfp_puc19_gibson_v3_clone" : "", # inventory; assembled sfGFP; cold_4
 }
 
 # ---------------------------------------------------------------
@@ -101,6 +101,28 @@ p.gel_separate(pcr_plate.wells(seq_wells), ul(20), "agarose(8,0.8%)", "ladder1",
 assert all(pcr_plate.well(w).volume==ul(31) for w in seq_wells)
 assert primer_tube.volume == ul(16) == dead_volume['micro-1.5'] + ul(1)
 assert water_tube.volume > ul(25)
+
+# ---------------------------------------------------------------
+# Sanger sequencing, TURNED OFF
+# Sequence to make sure assembly worked
+# 500ng plasmid, 1 ul of a 10 µM stock primer
+# "M13_F"       : "rs17tcpqwqcaxe", # catalog; M13 Forward (-41); cold_20 (1ul = 100pmol)
+# "M13_R"       : "rs17tcph6e2qzh", # catalog; M13 Reverse (-48); cold_20 (1ul = 100pmol)
+#
+def do_sanger_seq(p,pcr_plate):
+    seq_primers = [p.inv["M13_F"], p.inv["M13_R"]]
+    seq_wells = ["G1","G2"]
+    p.unseal(pcr_plate)
+    for primer_num, seq_well in [(0, seq_wells[0]),(1, seq_wells[1])]:
+        p.provision(seq_primers[primer_num], pcr_plate.wells([seq_well]), ul(1))
+
+    p.transfer(pcr_plate.wells(["A1"]), pcr_plate.wells(seq_wells),  ul(5), mix_before=True, mix_vol=ul(10))
+    p.transfer(water_tube, pcr_plate.wells(seq_wells), ul(9))
+
+    p.mix(pcr_plate.wells(seq_wells), volume=ul(7.5), repetitions=10)
+    p.sangerseq(pcr_plate, pcr_plate.wells(seq_wells[0]).indices(), expid("seq1"))
+    p.sangerseq(pcr_plate, pcr_plate.wells(seq_wells[1]).indices(), expid("seq2"))
+
 
 # ---------------------------------------------------------------
 # Test and run protocol
