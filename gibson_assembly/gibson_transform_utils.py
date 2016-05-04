@@ -44,7 +44,7 @@ def do_gibson_assembly(p, water_tube, clone_plate, puc19_cut_tube, sfgfp_pcroe_a
 
     p.seal(clone_plate)
     p.thermocycle(clone_plate,
-                  [{"cycles":  1, "steps": [{"temperature": "50:celsius ", "duration": "15:minute"}]}],
+                  [{"cycles":  1, "steps": [{"temperature": "50:celsius", "duration": "15:minute"}]}],
                   volume=ul(20))
 
     #
