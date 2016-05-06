@@ -14,6 +14,7 @@ class CustomProtocol(Protocol):
             "LB Miller"   : "rs17bafcbmyrmh", # catalog; LB Broth Miller; cold_4
             "Amp 100mgml" : "rs17msfk8ujkca", # catalog; Ampicillin 100mg/ml; cold_20
             "pUC19"       : "rs17tcqmncjfsh", # catalog; pUC19; cold_20            
+            "IPTG"          : "rs18vwgfgxq597", # catalog: 100mM
             "M13_F"                       : "rs17tcpqwqcaxe", # catalog; M13 Forward (-41); cold_20 (1ul = 100pmol)
             "M13_R"                       : "rs17tcph6e2qzh", # catalog; M13 Reverse (-48); cold_20 (1ul = 100pmol)
             "SensiFAST_SYBR_No-ROX"       : "rs17knkh7526ha", # catalog; SensiFAST SYBR for qPCR      
@@ -445,9 +446,9 @@ class CustomProtocol(Protocol):
                               tip_type=tip_type, new_group=new_group,
                               ignore_mix_after_warning=ignore_mix_after_warning)                               
         else:
-            super().distribute(source, dest, volume, allow_carryover=False,
-                               mix_before=False, mix_vol=None, repetitions=10,
-                               flowrate="100:microliter/second", aspirate_speed=None,
-                               aspirate_source=None, distribute_target=None,
-                               pre_buffer=None, disposal_vol=None, transit_vol=None,
-                               blowout_buffer=None, tip_type=None, new_group=False)
+            super().distribute(source, dest, volume, allow_carryover=allow_carryover,
+                               mix_before=mix_before, mix_vol=mix_vol, repetitions=repetitions,
+                               flowrate=flowrate, aspirate_speed=aspirate_speed,
+                               aspirate_source=aspirate_source, distribute_target=distribute_target,
+                               pre_buffer=pre_buffer, disposal_vol=disposal_vol, transit_vol=transit_vol,
+                               blowout_buffer=blowout_buffer, tip_type=tip_type, new_group=new_group)
