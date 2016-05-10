@@ -28,7 +28,7 @@ def plate_expid(val):
 #
 inv = {
     # plates from previous experiment, must be changed every new experiment
-    plate_expid("amp_6_flat")  : "", # inventory; Ampicillin plates with transformed bacteria
+    plate_expid("amp_6_flat")  : "ct18yn63tz9wv9", # inventory; Ampicillin plates with transformed bacteria
 }
 
 if "--test" in sys.argv:
@@ -102,8 +102,8 @@ def measure_growth_wells():
     # Fluorescence at 485nm/510nm: sfGFP
     # or 450nm/508nm (http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2695656/)
     #
-    hr = 4
-    for t in range(0,48,hr):
+    hr = 24
+    for t in range(0,hr*4+1,hr):
         if t > 0:
             p.cover(growth_plate)
             p.incubate(growth_plate, "warm_37", "{}:hour".format(hr), shaking=True)
@@ -121,7 +121,7 @@ def measure_growth_wells():
         p.absorbance(growth_plate, growth_plate.wells(abs_wells).indices(),
                      wavelength="600:nanometer",
                      dataref=expid("abs_{}".format(t)), flashes=25)
-    return
+    
 
 # ---------------------------------------------------------------
 # Protocol steps
