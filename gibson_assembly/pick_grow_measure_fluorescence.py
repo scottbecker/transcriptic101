@@ -103,7 +103,7 @@ def measure_growth_wells():
     # or 450nm/508nm (http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2695656/)
     #
     hr = 24
-    for t in range(0,hr*4+1,hr):
+    for t in range(0,hr+1,hr):
         if t > 0:
             p.cover(growth_plate)
             p.incubate(growth_plate, "warm_37", "{}:hour".format(hr), shaking=True)
