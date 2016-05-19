@@ -98,12 +98,10 @@ def measure_growth_wells():
     #
     # Growth: absorbance and fluorescence over 24 hours
     # Absorbance at 600nm: cell growth
-    # Absorbance at 615nm: X-gal, in theory
     # Fluorescence at 485nm/510nm: sfGFP
-    # or 450nm/508nm (http://www.ncbi.nlm.nih.gov/pmc/articles/PMC2695656/)
     #
-    hr = 24
-    for t in range(0,hr+1,hr):
+    hr = 12
+    for t in range(0,hr*2+1,hr):
         if t > 0:
             p.cover(growth_plate)
             p.incubate(growth_plate, "warm_37", "{}:hour".format(hr), shaking=True)
@@ -112,12 +110,6 @@ def measure_growth_wells():
         p.fluorescence(growth_plate, growth_plate.wells(abs_wells).indices(),
                        excitation="485:nanometer", emission="535:nanometer",
                        dataref=expid("fl2_{}".format(t)), flashes=25)
-        p.fluorescence(growth_plate, growth_plate.wells(abs_wells).indices(),
-                       excitation="450:nanometer", emission="508:nanometer",
-                       dataref=expid("fl1_{}".format(t)), flashes=25)
-        p.fluorescence(growth_plate, growth_plate.wells(abs_wells).indices(),
-                       excitation="395:nanometer", emission="508:nanometer",
-                       dataref=expid("fl0_{}".format(t)), flashes=25)
         p.absorbance(growth_plate, growth_plate.wells(abs_wells).indices(),
                      wavelength="600:nanometer",
                      dataref=expid("abs_{}".format(t)), flashes=25)
