@@ -78,7 +78,8 @@ def _do_transformation(p, clone_plate,transform_plate, transform_tube,
     #
     p.provision(p.inv["DH5a"], transform_tube,  ul(50))
     assert clone_plate.well(0).volume >= ul(6), clone_plate.well(0).volume
-    p.transfer(clone_plate.well(0), transform_tube, ul(3), dispense_speed="10:microliter/second",
+    #This was changed from the original publication of 3uL due to low colony turnout
+    p.transfer(clone_plate.well(0), transform_tube, ul(5), dispense_speed="10:microliter/second",
                mix_after=True,mix_vol=ul(10))
     
 
