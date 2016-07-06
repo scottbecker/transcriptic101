@@ -1,0 +1,127 @@
+{
+	"format": "python",
+	"license": "MIT",
+	"protocols": [{
+		"name": "SampleProtocol1",
+		"version": "1.0.0",
+		"description": "Measure absorbance of various dilutions of OrangeG dye.",
+		"command_string": "python -m protocol1.protocol",
+		"inputs": {
+			"dye": "aliquot",
+			"water": "aliquot",
+			"destination_plate": "container",
+			"dye_locations": {
+				"type": "group+",
+				"description": "Each group represents a volume of dye to be placed in the specified well",
+				"inputs": {
+					"volume": {
+						"type": "volume",
+						"description": "Enter a volume up to 100 microliters"
+					},
+					"well_index": {
+						"type": "string",
+						"description": "Enter a numerical well index (between 0 and 95)"
+					}
+				}
+			}
+		},
+		"preview": {
+			"refs": {
+				"OrangeG": {
+					"type": "micro-1.5",
+					"store": "cold_4"
+				},
+				"Water": {
+					"type": "micro-1.5",
+					"store": "cold_4"
+				},
+				"Test plate": {
+					"type": "96-flat",
+					"discard": true
+				}
+			},
+			"parameters": {
+				"dye": "OrangeG/0",
+				"water": "Water/0",
+				"destination_plate": "Test plate",
+				"dye_locations": [{
+					"volume": "10:microliter",
+					"well_index": 0
+				}, {
+					"volume": "20:microliter",
+					"well_index": 1
+				}, {
+					"volume": "30:microliter",
+					"well_index": 2
+				}, {
+					"volume": "40:microliter",
+					"well_index": 3
+				}, {
+					"volume": "100:microliter",
+					"well_index": 4
+				}]
+			}
+		}
+	}, {
+		"name": "SampleProtocol2",
+		"version": "1.0.0",
+		"description": "Measure absorbance of various dilutions of OrangeG dye.",
+		"command_string": "python -m protocol2.protocol",
+		"inputs": {
+			"dye": "aliquot",
+			"water": "aliquot",
+			"destination_plate": "container",
+			"dye_locations": {
+				"type": "group+",
+				"description": "Each group represents a volume of dye to be placed in the specified well",
+				"inputs": {
+					"volume": {
+						"type": "volume",
+						"description": "Enter a volume up to 100 microliters"
+					},
+					"well_index": {
+						"type": "string",
+						"description": "Enter a numerical well index (between 0 and 95)"
+					}
+				}
+			}
+		},
+		"preview": {
+			"refs": {
+				"OrangeG": {
+					"type": "micro-1.5",
+					"store": "cold_4"
+				},
+				"Water": {
+					"type": "micro-1.5",
+					"store": "cold_4"
+				},
+				"Test plate": {
+					"type": "96-flat",
+					"discard": true
+				}
+			},
+			"parameters": {
+				"dye": "OrangeG/0",
+				"water": "Water/0",
+				"destination_plate": "Test plate",
+				"dye_locations": [{
+					"volume": "10:microliter",
+					"well_index": 0
+				}, {
+					"volume": "20:microliter",
+					"well_index": 1
+				}, {
+					"volume": "30:microliter",
+					"well_index": 2
+				}, {
+					"volume": "40:microliter",
+					"well_index": 3
+				}, {
+					"volume": "100:microliter",
+					"well_index": 4
+				}]
+			}
+		}
+	}]
+}

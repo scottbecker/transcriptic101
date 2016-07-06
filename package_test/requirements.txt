@@ -1,0 +1,2 @@
+# requirements.txt using the latest autoprotocol release 
+autoprotocol>=3.7.2
